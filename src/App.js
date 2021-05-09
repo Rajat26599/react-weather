@@ -1,11 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const api = {
   key: "a9346aa8cbb9cd7d78d1329ca69bdbcd",
+  // key: "893db15bcf0f784c57bfae474a7ba1e1",
   base: "https://api.openweathermap.org/data/2.5/"
 }
 
+
 function App() {
+
+  useEffect(() => {
+
+    const successfulLookup = position => {
+      const { latitude, longitude } = position.coords;
+      fetch(`https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=f090ea5238b8437fbc5ed6d9b0f9e261`)
+        .then(response => response.json())
+        .then(result => {
+          console.log(result);
+          const query = result.results[0].components.city;
+          // weatherOnLoad(query);
+          weatherOnLoad(query);
+        })
+    };
+
+    const weatherOnLoad = query => {
+      fetch(`${api.base}weather?q=${query}&units=metric&APPID=${api.key}`)
+        .then(res => res.json())
+        .then(result => {
+          setWeather(result);
+          setQuery('');
+          console.log(result);
+        });
+    };
+
+    // successfulLookup();
+
+    if (window.navigator.geolocation) {
+      // Geolocation available
+      window.navigator.geolocation
+       .getCurrentPosition(successfulLookup, console.log);
+    }
+  }, []);
+
+
   const [query, setQuery] = useState('');
   const [weather, setWeather] = useState({});
 
